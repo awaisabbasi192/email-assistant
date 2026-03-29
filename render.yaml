@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: email-assistant
+    env: python
+    region: oregon
+    plan: free
+
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd web_ui && python app.py
+
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        scope: run
+        # Add your actual API key in Render dashboard
+
+      - key: FLASK_ENV
+        value: production
+
+      - key: FLASK_DEBUG
+        value: "0"
+
+      - key: RENDER_URL
+        fromService:
+          name: email-assistant
+          type: web
+          property: url
+
+    # Auto-deploy on GitHub push
+    autoDeploy: true

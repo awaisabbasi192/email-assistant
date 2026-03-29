@@ -787,5 +787,12 @@ if __name__ == '__main__':
     port = CONFIG.get('web_ui', {}).get('port', 5000)
     debug = CONFIG.get('web_ui', {}).get('debug', False)
 
+    # Start keep-alive service for Render deployment
+    try:
+        from keep_alive import start_keep_alive
+        start_keep_alive()
+    except ImportError:
+        logger.warning("Keep-alive module not available")
+
     logger.info(f"Starting Flask app on port {port}")
-    app.run(host='127.0.0.1', port=port, debug=debug)
+    app.run(host='0.0.0.0', port=port, debug=debug)

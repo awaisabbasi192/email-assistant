@@ -22,6 +22,7 @@ flask-wtf>=1.2.1
 
 # Task scheduling
 APScheduler>=3.10.0
+schedule>=1.2.0
 
 # File handling
 python-magic>=0.4.24
