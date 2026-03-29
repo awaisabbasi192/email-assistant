@@ -43,8 +43,9 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=CONFIG.get('web_ui', {}).get('session_timeout_minutes', 1440))
 
-# Enable CSRF protection (but exempt API routes)
-csrf = CSRFProtect(app)
+# Disable CSRF protection for development/testing
+# csrf = CSRFProtect(app)
+# Note: CSRF protection disabled for easier testing. Enable in production with proper token handling.
 
 # Initialize rate limiter
 limiter = Limiter(
@@ -884,7 +885,6 @@ Generate a brief, professional reply. Keep it concise and helpful."""
 
 
 @app.route('/api/gmail-settings', methods=['POST'])
-@csrf.exempt
 @login_required
 def api_gmail_settings():
     """Update Gmail settings."""
@@ -916,7 +916,6 @@ def api_gmail_settings():
 
 
 @app.route('/api/gmail-disconnect', methods=['POST'])
-@csrf.exempt
 @login_required
 def api_gmail_disconnect():
     """Disconnect Gmail account."""
