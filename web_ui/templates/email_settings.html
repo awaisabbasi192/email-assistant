@@ -330,31 +330,31 @@
             Enable the assistant to read your incoming emails and automatically generate intelligent draft replies powered by AI.
         </div>
 
-        <!-- Gmail Email Form -->
-        <form method="POST" action="/api/gmail-settings" id="emailForm">
-            <div class="form-group">
-                <label for="gmail_email">Gmail Email Address</label>
-                <input
-                    type="email"
-                    id="gmail_email"
-                    name="gmail_email"
-                    placeholder="your.email@gmail.com"
-                    value="{{ gmail_email or '' }}"
-                    required
-                >
-                <span class="form-hint">Must be a valid @gmail.com address</span>
+        <!-- Gmail Connection Info -->
+        {% if gmail_connected %}
+        <div class="form-group">
+            <label>Connected Email</label>
+            <div style="padding: 14px 16px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; color: #86efac;">
+                {{ gmail_email }}
             </div>
+        </div>
+        {% endif %}
 
-            <div class="button-group">
-                {% if gmail_connected %}
+        <!-- Gmail OAuth Buttons -->
+        <div class="button-group">
+            {% if not gmail_connected %}
+            <form method="GET" action="/auth/start" style="width: 100%;">
+                <button type="submit" class="btn-primary" style="width: 100%; margin: 0;">
+                    🔐 Connect Gmail Account
+                </button>
+            </form>
+            {% else %}
+            <form method="GET" action="/auth/start" style="flex: 1;">
                 <button type="submit" class="btn-primary">Update</button>
-                <button type="button" class="btn-danger" onclick="disconnectGmail()">Disconnect</button>
-                {% else %}
-                <button type="submit" class="btn-primary">Connect Gmail</button>
-                <button type="button" class="btn-secondary" onclick="window.history.back()">Cancel</button>
-                {% endif %}
-            </div>
-        </form>
+            </form>
+            <button type="button" class="btn-danger" onclick="disconnectGmail()">Disconnect</button>
+            {% endif %}
+        </div>
 
         <a href="/dashboard" class="nav-button">← Back to Dashboard</a>
     </div>

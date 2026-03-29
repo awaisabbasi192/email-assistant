@@ -15,6 +15,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from functools import wraps
+from pathlib import Path
 
 from database import DatabaseManager
 from email_classifier import EmailClassifier
@@ -23,6 +24,18 @@ from analytics import EmailAnalytics
 from utils import DataExporter, EmailValidator, ReportGenerator
 from auth_utils import PasswordManager
 from validators import InputValidator
+
+# OAuth imports
+try:
+    from google_auth_oauthlib.flow import Flow
+    from google.auth.transport.requests import Request
+    from google.oauth2.credentials import Credentials
+    import google.auth
+    GOOGLE_AUTH_AVAILABLE = True
+except ImportError:
+    GOOGLE_AUTH_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("Google auth libraries not available - OAuth disabled")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -69,6 +82,17 @@ db = DatabaseManager(db_path)
 classifier = EmailClassifier()
 health_checker = ServiceHealthChecker()
 analytics = EmailAnalytics(db)
+
+# OAuth Configuration
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', 'http://localhost:5000/auth/callback')
+
+# OAuth scopes for Gmail
+SCOPES = [
+    'https://www.googleapis.com/auth/gmail.modify',
+    'https://www.googleapis.com/auth/gmail.send'
+]
 
 
 def login_required(f):
@@ -947,6 +971,117 @@ def api_gmail_disconnect():
     except Exception as e:
         logger.error(f"Error disconnecting Gmail: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+# ===== OAUTH ROUTES =====
+
+@app.route('/auth/start')
+@login_required
+def auth_start():
+    """Start Gmail OAuth flow."""
+    if not GOOGLE_AUTH_AVAILABLE or not GOOGLE_CLIENT_ID:
+        return jsonify({'error': 'Google OAuth not configured'}), 500
+
+    try:
+        user_id = session.get('user_id', 1)
+
+        # Create OAuth flow
+        flow = Flow.from_client_secrets_file(
+            'google_credentials.json',
+            scopes=SCOPES,
+            redirect_uri=GOOGLE_REDIRECT_URI
+        )
+
+        # Generate authorization URL
+        authorization_url, state = flow.authorization_url(
+            access_type='offline',
+            include_granted_scopes='true'
+        )
+
+        # Store state in session
+        session['oauth_state'] = state
+        session['user_id_oauth'] = user_id
+
+        logger.info(f"OAuth flow started for user {user_id}")
+        return redirect(authorization_url)
+
+    except Exception as e:
+        logger.error(f"OAuth start error: {e}")
+        return jsonify({'error': 'Failed to start OAuth'}), 500
+
+
+@app.route('/auth/callback')
+def auth_callback():
+    """Handle OAuth callback from Google."""
+    if not GOOGLE_AUTH_AVAILABLE:
+        return jsonify({'error': 'Google OAuth not configured'}), 500
+
+    try:
+        # Get authorization code
+        code = request.args.get('code')
+        state = request.args.get('state')
+
+        if not code:
+            return jsonify({'error': 'No authorization code received'}), 400
+
+        # Verify state
+        if state != session.get('oauth_state'):
+            logger.warning("OAuth state mismatch")
+            return jsonify({'error': 'OAuth state mismatch'}), 400
+
+        # Exchange code for token
+        flow = Flow.from_client_secrets_file(
+            'google_credentials.json',
+            scopes=SCOPES,
+            redirect_uri=GOOGLE_REDIRECT_URI,
+            state=state
+        )
+
+        flow.fetch_token(code=code)
+        credentials = flow.credentials
+
+        # Get user info
+        user_id = session.get('user_id_oauth', 1)
+        gmail_email = credentials.token_json.get('email') if hasattr(credentials, 'token_json') else None
+
+        # Store OAuth token in database
+        conn = db.get_connection()
+        cursor = conn.cursor()
+
+        # Save oauth token
+        token_json = json.dumps({
+            'access_token': credentials.token,
+            'refresh_token': credentials.refresh_token,
+            'token_uri': credentials.token_uri,
+            'client_id': credentials.client_id,
+            'client_secret': credentials.client_secret,
+            'scopes': credentials.scopes
+        })
+
+        cursor.execute("""
+            INSERT OR REPLACE INTO oauth_tokens (user_id, service, token_data, expires_at)
+            VALUES (?, ?, ?, ?)
+        """, (user_id, 'gmail', token_json, None))
+
+        # Update user Gmail info
+        if gmail_email:
+            cursor.execute("""
+                UPDATE users
+                SET gmail_email = ?, gmail_connected = 1
+                WHERE id = ?
+            """, (gmail_email, user_id))
+
+        conn.commit()
+        conn.close()
+
+        logger.info(f"OAuth successful for user {user_id}")
+
+        # Redirect to dashboard
+        return redirect('/dashboard?msg=Gmail connected successfully!')
+
+    except Exception as e:
+        logger.error(f"OAuth callback error: {e}")
+        return redirect('/gmail-settings?error=OAuth failed')
 
 
 @app.errorhandler(404)
