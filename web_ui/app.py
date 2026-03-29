@@ -231,7 +231,7 @@ def register():
             conn.close()
 
             logger.info(f"New user registered: {username}")
-            return render_template('register.html', success='Account created! Please login.')
+            return render_template('register.html', success='Account created successfully! Redirecting to login...')
 
         except Exception as e:
             logger.error(f"Registration error: {e}")

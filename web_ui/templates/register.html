@@ -54,9 +54,11 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(148, 163, 184, 0.2);
             border-radius: 20px;
-            padding: 50px 40px;
+            padding: 40px 32px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         @keyframes slideUp {
@@ -104,7 +106,7 @@
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
@@ -323,6 +325,14 @@
     </div>
 
     <script>
+        // Auto-redirect to login if signup successful
+        const successMsg = document.querySelector('.success-message');
+        if (successMsg) {
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000); // Redirect after 2 seconds
+        }
+
         // Form validation
         document.querySelector('form').addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
