@@ -246,13 +246,21 @@ def dashboard():
     """Main dashboard."""
     user_id = get_current_user_id()
 
-    # Get statistics (database methods default to user_id=1 for backward compatibility)
-    total_emails = db.get_email_count()
-    processed_count = db.get_processed_count()
-    pending_drafts = db.get_draft_count('pending')
+    try:
+        # Get statistics with user_id
+        total_emails = db.get_email_count(user_id)
+        processed_count = db.get_processed_count(user_id)
+        pending_drafts = db.get_draft_count('pending', user_id)
 
-    # Get category distribution
-    category_dist = db.get_category_distribution()
+        # Get category distribution
+        category_dist = db.get_category_distribution(user_id)
+    except Exception as e:
+        logger.warning(f"Dashboard stats error (might be normal on first login): {e}")
+        # Default values
+        total_emails = 0
+        processed_count = 0
+        pending_drafts = 0
+        category_dist = {}
 
     # Check service health
     health = health_checker.get_health_report()
