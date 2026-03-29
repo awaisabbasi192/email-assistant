@@ -123,21 +123,50 @@ def login():
             logger.warning("Login attempt with missing username or password")
             return render_template('login.html', error='Username and password required')
 
-        # Get credentials from config
-        config_username = CONFIG.get('web_ui', {}).get('username', 'admin')
-        config_password_hash = CONFIG.get('web_ui', {}).get('password_hash', '')
+        try:
+            # Check database for user
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT id, password_hash, is_active
+                FROM users
+                WHERE username = ?
+            """, (username,))
+            user = cursor.fetchone()
+            conn.close()
 
-        # Validate credentials with bcrypt
-        if username == config_username and config_password_hash and PasswordManager.verify_password(password, config_password_hash):
-            session['authenticated'] = True
-            session['username'] = username
-            session.permanent = True
-            logger.info(f"User {username} logged in successfully")
-            return redirect(url_for('dashboard'))
-        else:
+            if user:
+                user_id, password_hash, is_active = user
+
+                # Check if user is active
+                if not is_active:
+                    logger.warning(f"Login attempt for inactive user: {username}")
+                    return render_template('login.html', error='Account is disabled')
+
+                # Verify password
+                if PasswordManager.verify_password(password, password_hash):
+                    session['authenticated'] = True
+                    session['username'] = username
+                    session['user_id'] = user_id
+                    session.permanent = True
+                    logger.info(f"User {username} logged in successfully")
+
+                    # Update last login
+                    conn = db.get_connection()
+                    cursor = conn.cursor()
+                    cursor.execute("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?", (user_id,))
+                    conn.commit()
+                    conn.close()
+
+                    return redirect(url_for('dashboard'))
+
             logger.warning(f"Failed login attempt for username: {username}")
             # Don't reveal if username or password is wrong (security best practice)
             return render_template('login.html', error='Invalid username or password')
+
+        except Exception as e:
+            logger.error(f"Login error: {e}")
+            return render_template('login.html', error='Login failed. Please try again.')
 
     return render_template('login.html')
 
@@ -147,6 +176,67 @@ def logout():
     """Logout."""
     session.clear()
     return redirect(url_for('login'))
+
+
+@app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
+def register():
+    """User registration page."""
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        password_confirm = request.form.get('password_confirm', '')
+
+        # Validate input
+        errors = []
+
+        if not username or len(username) < 3 or len(username) > 50:
+            errors.append('Username must be 3-50 characters')
+
+        if not email or '@' not in email:
+            errors.append('Valid email required')
+
+        if not password or len(password) < 6:
+            errors.append('Password must be at least 6 characters')
+
+        if password != password_confirm:
+            errors.append('Passwords do not match')
+
+        if errors:
+            return render_template('register.html', error='; '.join(errors))
+
+        try:
+            # Check if user already exists
+            conn = db.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE username = ? OR email = ?", (username, email))
+
+            if cursor.fetchone():
+                conn.close()
+                return render_template('register.html', error='Username or email already exists')
+
+            # Hash password
+            password_manager = PasswordManager()
+            password_hash = password_manager.hash_password(password)
+
+            # Create user
+            cursor.execute("""
+                INSERT INTO users (username, email, password_hash, is_active, gmail_connected)
+                VALUES (?, ?, ?, ?, ?)
+            """, (username, email, password_hash, 1, 0))
+
+            conn.commit()
+            conn.close()
+
+            logger.info(f"New user registered: {username}")
+            return render_template('register.html', success='Account created! Please login.')
+
+        except Exception as e:
+            logger.error(f"Registration error: {e}")
+            return render_template('register.html', error='Registration failed. Please try again.')
+
+    return render_template('register.html')
 
 
 @app.route('/dashboard')
@@ -274,6 +364,29 @@ def templates_page():
 def settings_page():
     """Settings page."""
     return render_template('settings.html', config=CONFIG)
+
+
+@app.route('/gmail-settings')
+@login_required
+def gmail_settings_page():
+    """Gmail configuration page."""
+    try:
+        user_id = session.get('user_id', 1)
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT gmail_email, gmail_connected FROM users WHERE id = ?", (user_id,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            gmail_email, gmail_connected = user
+            return render_template('email_settings.html',
+                                 gmail_email=gmail_email,
+                                 gmail_connected=bool(gmail_connected))
+        return render_template('email_settings.html', gmail_email='', gmail_connected=False)
+    except Exception as e:
+        logger.error(f"Error loading Gmail settings: {e}")
+        return render_template('email_settings.html', error='Failed to load settings')
 
 
 # ===== API ENDPOINTS =====
@@ -767,6 +880,63 @@ Generate a brief, professional reply. Keep it concise and helpful."""
 
     except Exception as e:
         logger.error(f"Error generating draft: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/gmail-settings', methods=['POST'])
+@login_required
+def api_gmail_settings():
+    """Update Gmail settings."""
+    try:
+        user_id = session.get('user_id', 1)
+        gmail_email = request.form.get('gmail_email', '').strip()
+
+        # Validate email
+        if not gmail_email or '@gmail.com' not in gmail_email:
+            return jsonify({'error': 'Invalid Gmail address'}), 400
+
+        # Update database
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE users
+            SET gmail_email = ?, gmail_connected = 1
+            WHERE id = ?
+        """, (gmail_email, user_id))
+        conn.commit()
+        conn.close()
+
+        logger.info(f"User {user_id} updated Gmail to: {gmail_email}")
+        return jsonify({'status': 'success', 'message': 'Gmail settings updated'}), 200
+
+    except Exception as e:
+        logger.error(f"Error updating Gmail settings: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/gmail-disconnect', methods=['POST'])
+@login_required
+def api_gmail_disconnect():
+    """Disconnect Gmail account."""
+    try:
+        user_id = session.get('user_id', 1)
+
+        # Update database
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE users
+            SET gmail_email = NULL, gmail_connected = 0
+            WHERE id = ?
+        """, (user_id,))
+        conn.commit()
+        conn.close()
+
+        logger.info(f"User {user_id} disconnected Gmail")
+        return jsonify({'status': 'success', 'message': 'Gmail disconnected'}), 200
+
+    except Exception as e:
+        logger.error(f"Error disconnecting Gmail: {e}")
         return jsonify({'error': str(e)}), 500
 
 
