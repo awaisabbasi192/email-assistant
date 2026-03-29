@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Draft Review - Email Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-2">
+                <i class="fas fa-file-pen text-warning"></i>
+                Draft Review & Management
+            </h1>
+            <p class="text-secondary mb-0">Review and approve AI-generated email drafts</p>
+        </div>
+        <div class="btn-group" role="group">
+            <button class="btn btn-primary" onclick="refreshDrafts()">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button class="btn btn-danger" onclick="deleteAllDrafts()">
+                <i class="fas fa-trash-alt"></i> Delete All
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-inbox"></i> Pending Drafts
+                        <span class="badge bg-warning">{{ drafts|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if drafts %}
+                    <div id="drafts-container">
+                        {% for draft in drafts %}
+                        <div class="draft-card" data-draft-id="{{ draft.id }}">
+                            <div class="draft-header">
+                                <div>
+                                    <div class="draft-sender">
+                                        <i class="fas fa-user-circle"></i> {{ draft.sender }}
+                                    </div>
+                                    <div class="draft-subject">
+                                        <i class="fas fa-heading"></i> {{ draft.subject }}
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-info">
+                                        <i class="fas fa-brain"></i> {{ draft.model_used }}
+                                    </span>
+                                    <span class="badge bg-success ms-2">
+                                        <i class="fas fa-check"></i> {{ "%.0f"|format(draft.confidence_score * 100) }}%
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <div>
+                                        <h6 class="mb-2">
+                                            <i class="fas fa-envelope text-primary"></i> Original Email
+                                        </h6>
+                                        <div class="bg-light p-3 rounded border" style="max-height: 200px; overflow-y: auto;">
+                                            <p class="mb-0 text-secondary small">{{ draft.body[:300] }}...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div>
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0">
+                                                <i class="fas fa-reply text-success"></i> Generated Reply
+                                            </h6>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editDraft({{ draft.id }})" title="Edit reply">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                        </div>
+                                        <textarea class="form-control" rows="7" id="reply-{{ draft.id }}" readonly style="font-size: 0.9rem;">{{ draft.reply_body }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="draft-actions">
+                                <button class="btn btn-success btn-sm" onclick="approveDraft({{ draft.id }})" title="Approve and save to Gmail">
+                                    <i class="fas fa-check-circle"></i> Approve
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="regenerateDraft({{ draft.id }})" title="Generate a new reply">
+                                    <i class="fas fa-sync-alt"></i> Regenerate
+                                </button>
+                                <button class="btn btn-info btn-sm" onclick="openInGmail({{ draft.id }})" title="Open in Gmail">
+                                    <i class="fas fa-external-link-alt"></i> Open in Gmail
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteDraft({{ draft.id }})" title="Delete this draft">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                                <span class="text-muted small ms-auto">
+                                    <i class="fas fa-clock"></i> {{ draft.created_at }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        No pending drafts. Drafts will appear here as emails are processed.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Draft Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit text-primary"></i> Edit Draft Reply
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <label for="edit-textarea" class="form-label mb-2">
+                    <strong>Reply Content:</strong>
+                </label>
+                <textarea class="form-control" id="edit-textarea" rows="12" placeholder="Enter your reply here..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveDraftEdit()">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/draft-editor.js') }}"></script>
+
+<script>
+let currentEditDraftId = null;
+
+function editDraft(draftId) {
+    currentEditDraftId = draftId;
+    const textarea = document.getElementById(`reply-${draftId}`);
+    document.getElementById('edit-textarea').value = textarea.value;
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+function saveDraftEdit() {
+    if (!currentEditDraftId) return;
+
+    const newBody = document.getElementById('edit-textarea').value;
+
+    fetch(`/api/drafts/${currentEditDraftId}/update`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({reply_body: newBody})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.getElementById(`reply-${currentEditDraftId}`).value = newBody;
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            alert('Draft updated successfully!');
+        }
+    });
+}
+
+function approveDraft(draftId) {
+    if (!confirm('This will save the draft to your Gmail account. Continue?')) return;
+
+    fetch(`/api/drafts/${draftId}/status`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: 'approved'})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success') {
+            document.querySelector(`[data-draft-id="${draftId}"]`).remove();
+            alert('Draft approved!');
+            refreshDrafts();
+        }
+    });
+}
+
+function regenerateDraft(draftId) {
+    if (!confirm('Regenerate this draft with a new reply?')) return;
+
+    fetch(`/api/drafts/${draftId}/regenerate`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert('Draft regenerated!');
+        refreshDrafts();
+    });
+}
+
+function deleteDraft(draftId) {
+    if (!confirm('Delete this draft?')) return;
+
+    fetch(`/api/drafts/${draftId}/status`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: 'deleted'})
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.querySelector(`[data-draft-id="${draftId}"]`).remove();
+        alert('Draft deleted');
+    });
+}
+
+function openInGmail(draftId) {
+    alert('Opening in Gmail (requires manual action). Draft ID: ' + draftId);
+}
+
+function refreshDrafts() {
+    location.reload();
+}
+
+function deleteAllDrafts() {
+    if (!confirm('Are you sure you want to DELETE ALL DRAFTS? This cannot be undone!')) return;
+
+    // Get all draft IDs
+    const draftElements = document.querySelectorAll('[data-draft-id]');
+    if (draftElements.length === 0) {
+        alert('No drafts to delete');
+        return;
+    }
+
+    const draftIds = Array.from(draftElements).map(el => parseInt(el.dataset.draftId));
+    let deleted = 0;
+    let failed = 0;
+
+    // Delete each draft
+    draftIds.forEach(draftId => {
+        fetch(`/api/drafts/${draftId}/status`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({status: 'deleted'})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.querySelector(`[data-draft-id="${draftId}"]`).remove();
+                deleted++;
+            } else {
+                failed++;
+            }
+
+            // If all drafts processed, show message and reload
+            if (deleted + failed === draftIds.length) {
+                alert(`Deleted ${deleted} draft(s)${failed > 0 ? ', Failed: ' + failed : ''}`);
+                if (deleted > 0) {
+                    location.reload();
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error deleting draft:', err);
+            failed++;
+        });
+    });
+}
+</script>
+{% endblock %}

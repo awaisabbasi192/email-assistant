@@ -1,0 +1,285 @@
+{% extends "base_new.html" %}
+
+{% block title %}Emails - Email Assistant Pro{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-white mb-2">Email Inbox</h1>
+        <p class="text-gray-400">Manage and track your incoming emails</p>
+    </div>
+
+    <!-- Advanced Filters Panel -->
+    <div class="card-gradient glow-effect rounded-lg p-6 border border-primary-500/20 mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-white">
+                <i class="fas fa-filter mr-2"></i>Advanced Filters
+            </h3>
+            <button onclick="toggleFilters()" class="text-sm text-primary-400 hover:text-primary-300">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+
+        <div id="filterPanel" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Search -->
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Search</label>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
+                    <input type="text" id="searchInput" placeholder="Email, subject, sender..."
+                           class="w-full pl-10 pr-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition-colors">
+                </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Category</label>
+                <select id="categoryFilter" class="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500 transition-colors">
+                    <option value="">All Categories</option>
+                    <option value="question">Questions</option>
+                    <option value="notification">Notifications</option>
+                    <option value="update">Updates</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Processing Status</label>
+                <select id="statusFilter" class="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500 transition-colors">
+                    <option value="">All Status</option>
+                    <option value="processed">Processed</option>
+                    <option value="pending">Pending</option>
+                    <option value="error">Error</option>
+                </select>
+            </div>
+
+            <!-- Date Range -->
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Date Range</label>
+                <select id="dateFilter" class="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500 transition-colors">
+                    <option value="">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="mt-4 flex space-x-2">
+            <button onclick="applyFilters()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded-lg font-medium transition-colors">
+                <i class="fas fa-check mr-2"></i>Apply
+            </button>
+            <button onclick="resetFilters()" class="px-4 py-2 bg-dark-600 hover:bg-dark-500 text-white text-sm rounded-lg font-medium transition-colors">
+                <i class="fas fa-redo mr-2"></i>Reset
+            </button>
+        </div>
+    </div>
+
+    <!-- Emails List Header -->
+    <div class="flex items-center justify-between mb-4">
+        <div class="text-sm text-gray-400">
+            Showing <span id="emailCount">{{ emails|length }}</span> emails
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="sortEmails('newest')" class="px-3 py-1 bg-dark-700 hover:bg-dark-600 text-white text-xs rounded transition-colors">
+                <i class="fas fa-arrow-down mr-1"></i>Newest
+            </button>
+            <button onclick="sortEmails('oldest')" class="px-3 py-1 bg-dark-700 hover:bg-dark-600 text-white text-xs rounded transition-colors">
+                <i class="fas fa-arrow-up mr-1"></i>Oldest
+            </button>
+        </div>
+    </div>
+
+    <!-- Emails List -->
+    <div id="emailsList" class="space-y-3">
+        {% if emails %}
+            {% for email in emails %}
+            <div class="email-item card-gradient glow-effect rounded-lg p-4 border border-primary-500/20 hover:border-primary-400/40 transition-all cursor-pointer group animate-fade-in"
+                 data-category="{{ email.email_type }}"
+                 data-status="{{ 'processed' if email.has_reply else 'pending' }}"
+                 style="animation-delay: {{ loop.index0 * 0.03 }}s">
+
+                <div class="flex items-start space-x-4">
+                    <!-- Email Icon -->
+                    <div class="w-12 h-12 bg-gradient-to-br from-primary-500/30 to-primary-700/30 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:from-primary-500/50 group-hover:to-primary-700/50 transition-colors">
+                        {% if email.email_type == 'question' %}
+                        <i class="fas fa-question-circle text-primary-400 text-lg"></i>
+                        {% elif email.email_type == 'notification' %}
+                        <i class="fas fa-bell text-blue-400 text-lg"></i>
+                        {% elif email.email_type == 'update' %}
+                        <i class="fas fa-sync text-green-400 text-lg"></i>
+                        {% else %}
+                        <i class="fas fa-envelope text-primary-400 text-lg"></i>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email Content -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center space-x-2 mb-1">
+                            <h3 class="text-white font-semibold truncate group-hover:text-primary-300 transition-colors">
+                                {{ email.subject if email.subject else '(No Subject)' }}
+                            </h3>
+                            {% if email.has_reply %}
+                            <span class="badge-ai px-2 py-0.5 rounded text-xs flex-shrink-0">AI Reply</span>
+                            {% endif %}
+                        </div>
+
+                        <p class="text-sm text-gray-400 mb-2">
+                            From: <span class="text-primary-300">{{ email.from_email }}</span>
+                        </p>
+
+                        <!-- Email Preview -->
+                        <p class="text-sm text-gray-300 line-clamp-2 mb-2">
+                            {{ email.content[:100] }}...
+                        </p>
+
+                        <!-- Meta Info -->
+                        <div class="flex flex-wrap items-center gap-3 text-xs text-gray-500">
+                            <span><i class="fas fa-calendar mr-1"></i>{{ email.received_date }}</span>
+                            <span><i class="fas fa-tag mr-1"></i>{{ email.email_type|title }}</span>
+                            {% if email.confidence %}
+                            <span><i class="fas fa-chart-line mr-1"></i>Confidence: {{ (email.confidence * 100)|round(0) }}%</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Status & Action -->
+                    <div class="flex flex-col items-end space-y-2 flex-shrink-0">
+                        {% if email.has_reply %}
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-semibold rounded-full border border-green-500/30">Processed</span>
+                        <a href="{{ url_for('drafts_page') }}#draft-{{ email.id }}" class="px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white text-xs rounded transition-colors">
+                            <i class="fas fa-arrow-right mr-1"></i>View Reply
+                        </a>
+                        {% else %}
+                        <span class="px-3 py-1 bg-amber-500/20 text-amber-400 text-xs font-semibold rounded-full border border-amber-500/30">Pending</span>
+                        <button onclick="viewEmail({{ email.id }})" class="px-3 py-1 bg-dark-600 hover:bg-dark-500 text-white text-xs rounded transition-colors">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="text-center py-12">
+            <div class="w-16 h-16 mx-auto mb-4 bg-dark-700/50 rounded-full flex items-center justify-center">
+                <i class="fas fa-inbox text-gray-500 text-2xl"></i>
+            </div>
+            <h3 class="text-white text-lg font-semibold mb-1">No Emails Found</h3>
+            <p class="text-gray-400">Your inbox is empty or no emails match the filters</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Email Detail Modal -->
+<div id="emailModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="card-gradient glow-effect rounded-lg w-full max-w-2xl max-h-96 overflow-y-auto border border-primary-500/20">
+        <div class="sticky top-0 p-6 border-b border-dark-600 flex items-center justify-between bg-dark-900/80 backdrop-blur">
+            <h2 class="text-2xl font-bold text-white">Email Details</h2>
+            <button onclick="closeEmailModal()" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div id="emailContent" class="p-6"></div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let allEmails = document.querySelectorAll('.email-item');
+
+function toggleFilters() {
+    document.getElementById('filterPanel').classList.toggle('hidden');
+}
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const category = document.getElementById('categoryFilter').value;
+    const status = document.getElementById('statusFilter').value;
+
+    allEmails.forEach(email => {
+        const text = email.textContent.toLowerCase();
+        const emailCategory = email.dataset.category;
+        const emailStatus = email.dataset.status;
+
+        const matchesSearch = !search || text.includes(search);
+        const matchesCategory = !category || emailCategory === category;
+        const matchesStatus = !status || emailStatus === status;
+
+        email.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
+    });
+
+    updateEmailCount();
+}
+
+function resetFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('categoryFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('dateFilter').value = '';
+
+    allEmails.forEach(email => email.style.display = '');
+    updateEmailCount();
+}
+
+function updateEmailCount() {
+    const visible = document.querySelectorAll('.email-item:not([style*="display: none"])').length;
+    document.getElementById('emailCount').textContent = visible;
+}
+
+function sortEmails(order) {
+    const container = document.getElementById('emailsList');
+    const emails = Array.from(document.querySelectorAll('.email-item'));
+
+    emails.sort((a, b) => {
+        const timeA = new Date(a.dataset.time || 0);
+        const timeB = new Date(b.dataset.time || 0);
+        return order === 'newest' ? timeB - timeA : timeA - timeB;
+    });
+
+    emails.forEach(email => container.appendChild(email));
+}
+
+function viewEmail(emailId) {
+    fetch(`/api/email/${emailId}`)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('emailContent').innerHTML = `
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-gray-400 text-xs font-semibold uppercase mb-1">From</h3>
+                        <p class="text-white font-medium">${data.from_email}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-400 text-xs font-semibold uppercase mb-1">Subject</h3>
+                        <p class="text-white font-medium">${data.subject || '(No Subject)'}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-gray-400 text-xs font-semibold uppercase mb-1">Message</h3>
+                        <div class="bg-dark-700/50 p-4 rounded-lg border border-dark-600 text-gray-300 text-sm">
+                            ${data.content}
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('emailModal').classList.remove('hidden');
+        });
+}
+
+function closeEmailModal() {
+    document.getElementById('emailModal').classList.add('hidden');
+}
+
+// Event listeners
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('categoryFilter').addEventListener('change', applyFilters);
+document.getElementById('statusFilter').addEventListener('change', applyFilters);
+</script>
+{% endblock %}

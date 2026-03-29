@@ -1,0 +1,79 @@
+{
+  "gmail": {
+    "credentials_file": "credentials.json",
+    "token_file": "gmail_token.pickle",
+    "check_interval_seconds": 60,
+    "labels_to_check": ["UNREAD"],
+    "exclude_labels": ["DRAFT", "SENT", "AUTO_REPLIED"],
+    "max_results": 5,
+    "mark_as_read": false,
+    "skip_no_reply_emails": true,
+    "skip_keywords": []
+  },
+  "ollama": {
+    "base_url": "http://127.0.0.1:11434",
+    "primary_model": "mistral",
+    "fallback_models": ["mistral"],
+    "categorization_model": "mistral",
+    "temperature": 0.7,
+    "max_tokens": 500,
+    "timeout_seconds": 60
+  },
+  "draft_options": {
+    "auto_save_drafts": true,
+    "add_signature": false,
+    "signature_text": ""
+  },
+  "classification": {
+    "enabled": true,
+    "categories": ["personal", "work", "support", "marketing", "bills", "social", "newsletter", "urgent", "spam"],
+    "auto_categorize": true,
+    "confidence_threshold": 0.7
+  },
+  "web_ui": {
+    "enabled": true,
+    "host": "127.0.0.1",
+    "port": 5000,
+    "debug": false,
+    "auto_open_browser": true,
+    "username": "awais",
+    "password_hash": "$2b$12$example_hash_will_be_set_by_migrate_passwords",
+    "secret_key": "CHANGE_THIS_IN_PRODUCTION_generate_with_secrets_module",
+    "session_timeout_minutes": 1440,
+    "session_cookie_secure": true,
+    "enable_csrf": true,
+    "enable_rate_limiting": true,
+    "rate_limit_login": "5 per minute"
+  },
+  "analytics": {
+    "enabled": true,
+    "retention_days": 90
+  },
+  "templates": {
+    "enabled": true,
+    "auto_suggest": true
+  },
+  "logging": {
+    "level": "INFO",
+    "log_file": "email_assistant.log",
+    "console_output": true,
+    "max_log_size_mb": 10,
+    "backup_count": 5
+  },
+  "features": {
+    "create_labels_for_drafts": true,
+    "draft_label_name": "AUTO_REPLIED",
+    "only_reply_to_humans": true
+  },
+  "advanced": {
+    "retry_attempts": 3,
+    "circuit_breaker_threshold": 5,
+    "adaptive_intervals": true,
+    "quiet_hours": {
+      "enabled": false,
+      "start": "23:00",
+      "end": "07:00"
+    },
+    "database_file": "email_assistant.db"
+  }
+}

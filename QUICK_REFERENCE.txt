@@ -1,0 +1,391 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    EMAIL ASSISTANT - QUICK REFERENCE CARD                  ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 STARTUP COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TERMINAL 1 (Always first):
+    ollama serve
+
+TERMINAL 2 (Required):
+    cd C:\Users\awais
+    pip install -r requirements.txt  (first time only)
+    python web_ui/app.py
+
+TERMINAL 3 (Optional):
+    cd C:\Users\awais
+    python main.py
+
+OPEN BROWSER:
+    http://127.0.0.1:5000
+    Password: admin
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌐 WEB INTERFACE URLS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+http://127.0.0.1:5000/           → Login page
+http://127.0.0.1:5000/dashboard  → Dashboard (stats & health)
+http://127.0.0.1:5000/emails     → Email list
+http://127.0.0.1:5000/drafts     → Draft review ⭐ MOST USED
+http://127.0.0.1:5000/analytics  → Charts & trends
+http://127.0.0.1:5000/templates  → Reply templates
+http://127.0.0.1:5000/settings   → Configuration view
+http://127.0.0.1:5000/logout     → Logout
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 DRAFT ACTIONS REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ APPROVE
+  When: Reply looks perfect
+  Effect: Saves to Gmail draft, status → approved
+  Next: Go to Gmail and send
+
+✎ EDIT
+  When: Need to modify reply
+  Effect: Opens text editor modal
+  Next: Make changes, click Save
+
+🔄 REGENERATE
+  When: Don't like current reply
+  Effect: Creates new reply with Ollama
+  Next: Review new version
+
+🔗 GMAIL
+  When: Want to open in Gmail
+  Effect: Shows you how to find it in Gmail
+  Next: Manual review in Gmail
+
+✕ DELETE
+  When: Reply is bad/not needed
+  Effect: Permanently removes draft
+  Warning: Can't undo!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📧 EMAIL CATEGORIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+personal      → Friends, family, personal contacts
+work          → Colleagues, projects, work-related
+support       → Help requests, customer service
+marketing     → Promotions, discounts, ads
+bills         → Invoices, receipts, payments
+social        → Social media notifications
+newsletter    → Subscriptions, digests
+urgent        → Time-sensitive, important
+spam          → Junk, unwanted emails
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ PRIORITY LEVELS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔴 URGENT   → Handle immediately (keywords: urgent, asap, critical)
+🟠 HIGH     → Handle soon (keywords: question, help, feedback)
+🟡 NORMAL   → Standard priority (most emails)
+🟢 LOW      → Can wait (newsletter, marketing)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 CONFIGURATION FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+config.json
+├─ gmail.check_interval_seconds → How often to check (300 = 5 min)
+├─ gmail.max_results → Max emails per check
+├─ ollama.primary_model → AI model to use
+├─ web_ui.password → Login password
+├─ web_ui.port → Server port
+└─ advanced.quiet_hours → When NOT to process
+
+credentials.json
+├─ OAuth file from Google
+├─ AUTO-CREATED on first run
+└─ Keep secure!
+
+gmail_token.pickle
+├─ Gmail session token
+├─ AUTO-CREATED after login
+└─ Keep secure!
+
+email_assistant.db
+├─ SQLite database
+├─ AUTO-CREATED first time
+└─ Contains all email/draft data
+
+email_assistant.log
+├─ Operation logs
+├─ AUTO-CREATED by main.py
+└─ Check for errors
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🐛 TROUBLESHOOTING QUICK FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROBLEM                          SOLUTION
+─────────────────────────────────────────────────────────────────────────
+Page won't load                  Close browser, clear cache, reopen
+Service shows ✗ unhealthy        Check if all 3 terminals are running
+No emails appearing              Wait 5 minutes, check if main.py running
+Can't login                       Check password (default: admin)
+ModuleNotFoundError              pip install -r requirements.txt
+Ollama connection error          Is "ollama serve" running in Terminal 1?
+Gmail connection error           Delete gmail_token.pickle, restart
+Database error                   Delete email_assistant.db, restart
+Page 500 error                   Check Terminal 2 output for error
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💻 KEY FILES & FOLDERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+C:\Users\awais\
+├── main.py                      → Email monitor (run in Terminal 3)
+├── web_ui/
+│   ├── app.py                   → Flask server (run in Terminal 2)
+│   ├── templates/               → HTML pages
+│   └── static/
+│       ├── css/style.css        → Styling
+│       └── js/                  → JavaScript
+├── database.py                  → Database operations
+├── config.json                  → Settings (edit this)
+├── email_assistant.db           → Database (auto-created)
+├── email_assistant.log          → Logs from main.py
+├── credentials.json             → Gmail OAuth (keep secure!)
+└── QUICK_START_GUIDE.md         → Detailed guide
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 DOCUMENTATION GUIDES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SETUP_TL_DR.txt
+└─ Quick 5-minute setup (START HERE!)
+
+QUICK_START_GUIDE.md
+└─ Detailed walkthrough with troubleshooting
+
+SYSTEM_FLOW.txt
+└─ Visual diagrams and workflows
+
+USAGE_EXAMPLES.txt
+└─ Real-world scenarios and examples
+
+IMPLEMENTATION_SUMMARY.md
+└─ Complete technical overview
+
+QUICK_REFERENCE.txt
+└─ This file! Quick lookup
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 DAILY WORKFLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+9:00 AM
+  1. Open http://127.0.0.1:5000
+  2. Click "Dashboard"
+  3. Check service health (all ✓?)
+  4. Note email count
+
+9:05 AM
+  1. Click "Drafts"
+  2. Review all pending
+  3. Approve/Edit/Delete as needed
+  ⏱️ Takes 10-15 min
+
+9:20 AM
+  1. Go to Gmail
+  2. Open Drafts folder
+  3. Send approved drafts
+
+12:00 PM
+  Quick check: Click "Drafts", approve new ones
+
+5:00 PM
+  End-of-day review: All remaining drafts
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ TIPS & TRICKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TIP 1: Filter emails by category on "Emails" page
+       Helps you focus on specific types
+
+TIP 2: Check "Confidence Score" on drafts
+       95% = very good, 50% = needs review
+
+TIP 3: Use templates for repeated responses
+       Create once, use many times
+
+TIP 4: Check Analytics weekly
+       Identify patterns and improve
+
+TIP 5: Keep "ollama serve" always running
+       Keeps model in memory (faster)
+
+TIP 6: Batch process drafts
+       Review all at once, not one-by-one
+
+TIP 7: Monitor logs
+       Terminal 3 shows what's happening
+
+TIP 8: Regenerate if tone is off
+       Sometimes 2nd try is better!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔒 SECURITY REMINDERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ KEEP SECURE:
+  - credentials.json (Gmail OAuth)
+  - gmail_token.pickle (Session token)
+  - email_assistant.db (Contains all data)
+  - config.json (Has sensitive settings)
+
+✓ DO:
+  - Change password from "admin"
+  - Run on localhost only (127.0.0.1)
+  - Backup database regularly
+  - Review drafts before sending
+  - Log out when done
+
+✗ DON'T:
+  - Share credentials.json
+  - Expose port 5000 to internet
+  - Use weak password
+  - Auto-send without review
+  - Leave database unencrypted
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 KEYBOARD SHORTCUTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+F5              Refresh current page
+Tab             Navigate between buttons
+Enter           Confirm action
+Esc             Close modal/cancel
+
+In Draft Editor:
+Ctrl+S          Save (might work)
+Ctrl+A          Select all text
+Ctrl+C/V        Copy/Paste
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 WHAT EACH DASHBOARD CARD SHOWS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Total Emails
+  How many emails are in your database
+  Includes all categories and all statuses
+
+Processed Emails
+  How many have been processed by AI
+  = Has a draft generated
+
+Pending Drafts
+  How many are waiting for your review
+  = Need action (approve/edit/delete)
+
+Processing Rate
+  What % of total emails have drafts
+  Goal: 100% (but some don't need replies)
+
+Category Chart
+  Which types of emails you get most
+  Helps identify patterns
+
+Service Health
+  ✓ = Working
+  ✗ = Problem needs attention
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 WHEN TO USE EACH FEATURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DASHBOARD
+  Morning check-in
+  Quick status overview
+  Service health verification
+
+EMAILS PAGE
+  Filter by category
+  Find specific email
+  Check what's in database
+
+DRAFTS PAGE
+  Every day (multiple times!)
+  Review generated replies
+  Make edits and approve
+
+ANALYTICS PAGE
+  Weekly review
+  Identify trends
+  Improve processes
+
+TEMPLATES PAGE
+  Set up initially
+  When creating new templates
+  For commonly asked questions
+
+SETTINGS PAGE
+  Rarely needed
+  Check configuration
+  Reference current settings
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 ERROR MESSAGES & MEANINGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"Connection refused"
+  → Is python web_ui/app.py running?
+
+"Cannot connect to Ollama"
+  → Is "ollama serve" running in Terminal 1?
+
+"ModuleNotFoundError"
+  → Run: pip install -r requirements.txt
+
+"Invalid password"
+  → Password is case-sensitive, default: admin
+
+"No such file: credentials.json"
+  → Run: python main.py (creates auth flow)
+
+"Database is locked"
+  → Close other instances, try again
+
+"Email not found"
+  → Run: python main.py to fetch emails
+
+"Draft update failed"
+  → Check database status, try again
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ SUCCESS INDICATORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ System Working
+  - Dashboard loads fast
+  - All service health ✓
+  - Charts display properly
+
+✓ Email Processing Working
+  - Emails appear on "Emails" page
+  - Drafts appear on "Drafts" page
+  - Numbers update in real-time
+
+✓ Everything Perfect
+  - You can review and approve
+  - Drafts appear in Gmail
+  - You can send from Gmail
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎉 YOU'RE ALL SET!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Print this page and keep it handy!
+For detailed help, read QUICK_START_GUIDE.md
+
+Questions? Check the documentation files!
+Issues? Check troubleshooting above!
+
+Happy email managing! 🚀

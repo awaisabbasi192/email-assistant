@@ -1,0 +1,35 @@
+# Email Assistant Pro - Desktop Application Requirements
+
+# Core dependencies
+flask>=2.3.0
+flask-cors>=4.0.0
+requests>=2.31.0
+
+# Gmail API
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+google-api-python-client>=2.100.0
+
+# Database
+# sqlite3 is built-in to Python, no need to install
+
+# Environment
+python-dotenv>=1.0.0
+
+# Desktop Application
+# pywebview>=5.0.1 - causes pythonnet build error on Python 3.14
+pystray>=0.19.5
+pillow>=10.0.0
+
+# AI/LLM
+# (Ollama is external service, installed separately)
+
+# Windows Notifications
+# win10toast - compatibility issue with Python 3.14
+
+# Build & Packaging
+# pyinstaller skipped for now
+setuptools>=65.0.0
+
+# Optional but recommended
+colorama>=0.4.6

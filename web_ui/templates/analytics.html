@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Email Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 main-content">
+    <div class="mb-4">
+        <h1 class="mb-2">
+            <i class="fas fa-chart-bar text-info"></i>
+            Analytics & Statistics
+        </h1>
+        <p class="text-secondary mb-0">View email processing metrics and performance data</p>
+    </div>
+
+    <!-- Daily Stats -->
+    <div class="row mb-4">
+        {% if today_analytics %}
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-card-label">
+                    <i class="fas fa-envelope"></i> Today's Emails
+                </div>
+                <div class="stat-card-value">{{ today_analytics.total_emails }}</div>
+                <div class="stat-card-change">Received today</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card success">
+                <div class="stat-card-label">
+                    <i class="fas fa-check-circle"></i> Processed Today
+                </div>
+                <div class="stat-card-value">{{ today_analytics.processed_emails }}</div>
+                <div class="stat-card-change">Replies generated</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card info">
+                <div class="stat-card-label">
+                    <i class="fas fa-chart-pie"></i> Processing Rate
+                </div>
+                <div class="stat-card-value">{% if today_analytics.total_emails > 0 %}{{ "%.1f"|format((today_analytics.processed_emails / today_analytics.total_emails) * 100) }}%{% else %}0%{% endif %}</div>
+                <div class="stat-card-change">Success ratio</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card warning">
+                <div class="stat-card-label">
+                    <i class="fas fa-hourglass-half"></i> Avg Response Time
+                </div>
+                <div class="stat-card-value">{{ "%.1f"|format(today_analytics.avg_response_time or 0) }}</div>
+                <div class="stat-card-change">Hours</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card chart-wrapper">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-pie-chart text-primary"></i> Category Distribution
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="categoryChartAnalytics"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="card chart-wrapper">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-line-chart text-success"></i> Processing Trend (30 Days)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const categoryData = {{ category_distribution | tojson }};
+const analyticsData = {{ analytics_range | tojson }};
+
+// Category Distribution Chart
+const ctx1 = document.getElementById('categoryChartAnalytics').getContext('2d');
+new Chart(ctx1, {
+    type: 'bar',
+    data: {
+        labels: Object.keys(categoryData),
+        datasets: [{
+            label: 'Number of Emails',
+            data: Object.values(categoryData),
+            backgroundColor: '#667eea'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {legend: {display: false}}
+    }
+});
+
+// Trend Chart
+const dates = analyticsData.map(a => a.date);
+const processed = analyticsData.map(a => a.processed_emails);
+const total = analyticsData.map(a => a.total_emails);
+
+const ctx2 = document.getElementById('trendChart').getContext('2d');
+new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [
+            {
+                label: 'Total Emails',
+                data: total,
+                borderColor: '#667eea',
+                tension: 0.1
+            },
+            {
+                label: 'Processed',
+                data: processed,
+                borderColor: '#43e97b',
+                tension: 0.1
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {position: 'top'}
+        }
+    }
+});
+</script>
+{% endblock %}

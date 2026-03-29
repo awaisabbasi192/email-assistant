@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Email Assistant Pro{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c3d66',
+                        },
+                        dark: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            700: '#374151',
+                            800: '#1f2937',
+                            900: '#111827',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Roboto', 'sans-serif'],
+                        display: ['Segoe UI Semibold', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-in': 'slideIn 0.3s ease-out',
+                        'pulse-subtle': 'pulseSubtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateX(-10px)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                        pulseSubtle: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.7' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #0284c7 #1f2937;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #0284c7;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0369a1;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
+            color: #f3f4f6;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .glass-effect {
+            background: rgba(31, 41, 55, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.1);
+        }
+
+        .card-gradient {
+            background: linear-gradient(135deg, rgba(31, 41, 55, 0.8), rgba(17, 24, 39, 0.8));
+            border: 1px solid rgba(2, 132, 199, 0.2);
+        }
+
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(2, 132, 199, 0.15);
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(2, 132, 199, 0.3);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #0284c7, #0ea5e9);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .notification {
+            animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-in 4.7s;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .badge-ai {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .highlight-ai {
+            position: relative;
+            background: linear-gradient(120deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-dark-900">
+    {% if request.endpoint != 'login' %}
+    <!-- Top Navigation -->
+    <nav class="glass-effect border-b border-dark-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a href="{{ url_for('dashboard') }}" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center group-hover:shadow-lg group-hover:shadow-primary-500/50 transition-all">
+                        <i class="fas fa-envelope-circle-check text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-primary-400 to-primary-300 bg-clip-text text-transparent">Email Assistant</span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="{{ url_for('dashboard') }}" class="nav-link px-3 py-2 rounded-lg text-sm font-medium hover:bg-dark-700/50 transition-colors {% if request.endpoint == 'dashboard' %}active text-primary-400{% else %}text-gray-300{% endif %}">
+                        <i class="fas fa-chart-line mr-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('emails_page') }}" class="nav-link px-3 py-2 rounded-lg text-sm font-medium hover:bg-dark-700/50 transition-colors {% if request.endpoint == 'emails_page' %}active text-primary-400{% else %}text-gray-300{% endif %}">
+                        <i class="fas fa-inbox mr-2"></i>Emails
+                    </a>
+                    <a href="{{ url_for('drafts_page') }}" class="nav-link px-3 py-2 rounded-lg text-sm font-medium hover:bg-dark-700/50 transition-colors {% if request.endpoint == 'drafts_page' %}active text-primary-400{% else %}text-gray-300{% endif %}">
+                        <i class="fas fa-file-pen mr-2"></i>Drafts
+                    </a>
+                    <a href="{{ url_for('analytics_page') }}" class="nav-link px-3 py-2 rounded-lg text-sm font-medium hover:bg-dark-700/50 transition-colors {% if request.endpoint == 'analytics_page' %}active text-primary-400{% else %}text-gray-300{% endif %}">
+                        <i class="fas fa-chart-bar mr-2"></i>Analytics
+                    </a>
+                    <a href="{{ url_for('templates_page') }}" class="nav-link px-3 py-2 rounded-lg text-sm font-medium hover:bg-dark-700/50 transition-colors {% if request.endpoint == 'templates_page' %}active text-primary-400{% else %}text-gray-300{% endif %}">
+                        <i class="fas fa-file-invoice mr-2"></i>Templates
+                    </a>
+                </div>
+
+                <!-- Right Side Menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Real-time Status -->
+                    <div class="hidden sm:flex items-center space-x-2 px-3 py-2 bg-dark-700/50 rounded-lg">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-xs text-gray-400">Live</span>
+                    </div>
+
+                    <!-- Settings & Logout -->
+                    <a href="{{ url_for('settings_page') }}" class="p-2 rounded-lg hover:bg-dark-700/50 transition-colors text-gray-400 hover:text-primary-400">
+                        <i class="fas fa-cog text-lg"></i>
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="p-2 rounded-lg hover:bg-dark-700/50 transition-colors text-gray-400 hover:text-red-400">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <!-- Notifications Container -->
+    <div id="notifications" class="fixed top-20 right-4 space-y-2 z-40"></div>
+
+    <!-- Main Content -->
+    <main class="{% if request.endpoint == 'login' %}h-screen flex items-center justify-center{% else %}py-8{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="{{ url_for('static', filename='js/realtime.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

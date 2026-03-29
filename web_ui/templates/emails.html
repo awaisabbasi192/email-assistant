@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Emails - Email Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 main-content">
+    <div class="mb-4">
+        <h1 class="mb-2">
+            <i class="fas fa-inbox text-primary"></i>
+            Email List
+        </h1>
+        <p class="text-secondary mb-0">View and filter all processed emails</p>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-envelope"></i> All Emails
+                    </h5>
+                </div>
+                <div class="col-md-8 text-end">
+                    <button id="fetchBtn" class="btn btn-lg btn-success" onclick="fetchNewEmails()" title="Click to fetch new emails immediately">
+                        <i class="fas fa-sync-alt"></i>
+                        <strong>🔄 FETCH NEW</strong>
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary ms-2" onclick="exportToCSV()" title="Export to CSV">
+                        <i class="fas fa-download"></i> CSV
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="exportToJSON()" title="Export to JSON">
+                        <i class="fas fa-download"></i> JSON
+                    </button>
+                </div>
+            </div>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="search-input" class="form-control" placeholder="Search emails..." onkeyup="searchEmails()">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="category-filter" class="form-select form-select-sm" onchange="filterByCategory()">
+                        <option value="">All Categories</option>
+                        <option value="personal">Personal</option>
+                        <option value="work">Work</option>
+                        <option value="support">Support</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="bills">Bills</option>
+                        <option value="social">Social</option>
+                        <option value="newsletter">Newsletter</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="spam">Spam</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="priority-filter" class="form-select form-select-sm" onchange="filterByPriority()">
+                        <option value="">All Priorities</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="high">High</option>
+                        <option value="normal">Normal</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="resetFilters()" title="Reset Filters">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if emails %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>
+                                <i class="fas fa-user"></i> From
+                            </th>
+                            <th>
+                                <i class="fas fa-heading"></i> Subject
+                            </th>
+                            <th>
+                                <i class="fas fa-tag"></i> Category
+                            </th>
+                            <th>
+                                <i class="fas fa-flag"></i> Priority
+                            </th>
+                            <th>
+                                <i class="fas fa-check"></i> Processed
+                            </th>
+                            <th>
+                                <i class="fas fa-calendar"></i> Date
+                            </th>
+                            <th>
+                                <i class="fas fa-cog"></i> Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for email in emails %}
+                        <tr>
+                            <td>{{ email.sender[:40] }}</td>
+                            <td>{{ email.subject[:50] }}</td>
+                            <td>
+                                <span class="badge bg-primary">{{ email.category or 'uncategorized' }}</span>
+                            </td>
+                            <td>
+                                {% if email.priority == 'urgent' %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-exclamation-triangle"></i> Urgent
+                                </span>
+                                {% elif email.priority == 'high' %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-arrow-up"></i> High
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-minus"></i> Normal
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if email.is_processed %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> Processed
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-clock"></i> Pending
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>{{ email.created_at[:10] }}</td>
+                            <td>
+                                <button class="btn btn-xs btn-primary" onclick="generateDraft({{ email.id }})" title="Generate Reply Draft">
+                                    <i class="fas fa-reply"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No emails found</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function filterByCategory() {
+    const category = document.getElementById('category-filter').value;
+    if (category) {
+        window.location.href = `?category=${category}`;
+    } else {
+        window.location.href = '/emails';
+    }
+}
+
+function filterByPriority() {
+    const priority = document.getElementById('priority-filter').value;
+    if (priority) {
+        const searchParams = new URLSearchParams(window.location.search);
+        searchParams.set('priority', priority);
+        window.location.href = `?${searchParams.toString()}`;
+    }
+}
+
+function searchEmails() {
+    const searchTerm = document.getElementById('search-input').value.trim();
+    if (searchTerm.length < 2) return;
+
+    fetch(`/api/search?q=${encodeURIComponent(searchTerm)}`)
+        .then(response => response.json())
+        .then(data => {
+            updateEmailTable(data);
+        })
+        .catch(error => console.error('Search error:', error));
+}
+
+function updateEmailTable(emails) {
+    const tbody = document.querySelector('table tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    if (emails.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No emails found</td></tr>';
+        return;
+    }
+
+    emails.forEach(email => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${email.sender.substring(0, 40)}</td>
+            <td>${email.subject.substring(0, 50)}</td>
+            <td><span class="badge bg-primary">${email.category || 'uncategorized'}</span></td>
+            <td>
+                ${getPriorityBadge(email.priority)}
+            </td>
+            <td>
+                ${email.is_processed ? '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Processed</span>' : '<span class="badge bg-secondary"><i class="fas fa-clock"></i> Pending</span>'}
+            </td>
+            <td>${email.created_at.substring(0, 10)}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function getPriorityBadge(priority) {
+    const priorityMap = {
+        'urgent': '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle"></i> Urgent</span>',
+        'high': '<span class="badge bg-warning"><i class="fas fa-arrow-up"></i> High</span>',
+        'normal': '<span class="badge bg-secondary"><i class="fas fa-minus"></i> Normal</span>',
+        'low': '<span class="badge bg-info"><i class="fas fa-arrow-down"></i> Low</span>'
+    };
+    return priorityMap[priority] || '<span class="badge bg-secondary">Unknown</span>';
+}
+
+function exportToCSV() {
+    fetch('/api/export/csv')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                downloadCSV(data.csv_data, 'emails_export.csv');
+            }
+        })
+        .catch(error => console.error('Export error:', error));
+}
+
+function exportToJSON() {
+    fetch('/api/export/json')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                downloadJSON(data.data, 'emails_export.json');
+            }
+        })
+        .catch(error => console.error('Export error:', error));
+}
+
+function downloadCSV(csvData, filename) {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvData));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
+function downloadJSON(jsonData, filename) {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(jsonData, null, 2)));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+}
+
+function resetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('category-filter').value = '';
+    document.getElementById('priority-filter').value = '';
+    window.location.href = '/emails';
+}
+
+function fetchNewEmails() {
+    const btn = document.getElementById('fetchBtn');
+    const originalHTML = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <strong>🔄 PROCESSING...</strong>';
+
+    // Show message
+    alert('🔄 Fetching emails...\n\nThis will take a moment...');
+
+    // Simple approach: reload page with refresh parameter
+    // This will trigger the backend to check emails
+    window.location.href = window.location.pathname + '?refresh=1';
+}
+
+function generateDraft(emailId) {
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    fetch(`/api/drafts/generate/${emailId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert(`✅ Draft Generated!\n\n${data.reply}`);
+            setTimeout(() => window.location.href = '/drafts', 1500);
+        } else if (data.status === 'exists') {
+            alert(`ℹ️ ${data.message}`);
+            setTimeout(() => window.location.href = '/drafts', 1000);
+        } else {
+            alert(`⚠️ ${data.error || 'Failed to generate draft'}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Error generating draft: ' + error);
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-reply"></i>';
+    });
+}
+</script>
+{% endblock %}

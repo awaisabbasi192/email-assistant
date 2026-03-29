@@ -1,0 +1,30 @@
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+google-api-python-client>=2.108.0
+setuptools>=70.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Core Flask
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# NLP and utilities
+langdetect>=1.0.9
+
+# Security
+bcrypt>=4.0.0
+cryptography>=41.0.0
+
+# Rate limiting and CSRF
+flask-limiter>=3.5.0
+flask-wtf>=1.2.1
+
+# Task scheduling
+APScheduler>=3.10.0
+
+# File handling
+python-magic>=0.4.24
+
+# Optional: Windows notifications
+win10toast>=0.9; sys_platform == 'win32'

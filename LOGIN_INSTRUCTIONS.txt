@@ -1,0 +1,108 @@
+EMAIL ASSISTANT - LOGIN INSTRUCTIONS
+================================================================================
+
+QUICK SUMMARY:
+================================================================================
+Username: admin
+Password: (you create this)
+
+SETUP IN 4 STEPS:
+================================================================================
+
+STEP 1: Set Password
+--------------------
+Command:
+  python migrate_passwords.py
+
+When prompted:
+  Username: [just press ENTER]
+  Password: password123
+  Confirm: password123
+
+Result: Password saved to config.json
+
+================================================================================
+
+STEP 2: Start Web Server
+------------------------
+Command:
+  python -c "from web_ui.app import app; app.run()"
+
+Wait for message:
+  Running on http://127.0.0.1:5000
+
+================================================================================
+
+STEP 3: Open Browser
+--------------------
+Go to:
+  http://localhost:5000
+
+Or:
+  http://127.0.0.1:5000
+
+================================================================================
+
+STEP 4: Login
+-------------
+Enter:
+  Username: admin
+  Password: password123
+
+Click: [Login]
+
+You'll see the Email Assistant dashboard!
+
+================================================================================
+
+IF YOU GET CSRF ERROR:
+================================================================================
+
+1. Press Ctrl+Shift+Delete to open cache clear dialog
+2. Select "All time"
+3. Check all boxes
+4. Click "Clear"
+5. Close browser completely
+6. Open browser again
+7. Go to http://localhost:5000
+8. Wait for page to fully load
+9. Try login again
+
+OR
+
+Clear with keyboard:
+  1. Stop web server (Ctrl+C)
+  2. Rename database: mv email_assistant.db email_assistant.db.old
+  3. Run: python migrate_passwords.py again
+  4. Start web server: python -c "from web_ui.app import app; app.run()"
+  5. Try login again
+
+================================================================================
+
+FEATURES AFTER LOGIN:
+================================================================================
+
+- View all Gmail emails
+- Generate AI replies
+- Search emails
+- Download attachments
+- Schedule emails
+- Snooze emails
+- Configure notifications
+- Manage settings
+
+================================================================================
+
+NEED HELP?
+================================================================================
+
+See these files:
+  - QUICK_START.md - Get started guide
+  - DEPLOYMENT_GUIDE.md - Production setup
+  - CONFIGURATION_GUIDE.md - All settings
+  - API_DOCUMENTATION.md - API reference
+
+================================================================================
+
+Last Updated: March 27, 2026
+Email Assistant v2.0

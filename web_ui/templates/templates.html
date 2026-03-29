@@ -1,0 +1,330 @@
+{% extends "base_new.html" %}
+
+{% block title %}Templates - Email Assistant Pro{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-white mb-2">Email Templates</h1>
+        <p class="text-gray-400">Quick reply templates for common responses</p>
+    </div>
+
+    <!-- Create Template Button -->
+    <div class="mb-6">
+        <button onclick="openCreateModal()" class="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl">
+            <i class="fas fa-plus mr-2"></i>Create New Template
+        </button>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Professional Reply -->
+        <div class="card-gradient glow-effect rounded-lg p-6 border border-primary-500/20 hover:border-primary-400/40 transition-all group cursor-pointer animate-fade-in">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-1">Professional Reply</h3>
+                    <span class="inline-block px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded-full">Default</span>
+                </div>
+                <button onclick="useTemplate('professional')" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-primary-600 rounded-lg text-white">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+            <p class="text-gray-300 text-sm mb-4 line-clamp-3">
+                "Dear [Sender], Thank you for your email. I appreciate you reaching out. I will review your message and get back to you shortly with a comprehensive response. Best regards, [Your Name]"
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span><i class="fas fa-file-alt mr-1"></i>Professional</span>
+                <button onclick="editTemplate('professional')" class="text-primary-400 hover:text-primary-300">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Friendly Reply -->
+        <div class="card-gradient glow-effect rounded-lg p-6 border border-primary-500/20 hover:border-primary-400/40 transition-all group cursor-pointer animate-fade-in" style="animation-delay: 0.05s">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-1">Friendly Reply</h3>
+                    <span class="inline-block px-2 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">Popular</span>
+                </div>
+                <button onclick="useTemplate('friendly')" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-primary-600 rounded-lg text-white">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+            <p class="text-gray-300 text-sm mb-4 line-clamp-3">
+                "Hi [Sender], Thanks so much for reaching out! I'm really glad you got in touch. I'll take a look at your message and will get back to you as soon as I can with more details. Talk soon! [Your Name]"
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span><i class="fas fa-smile mr-1"></i>Casual</span>
+                <button onclick="editTemplate('friendly')" class="text-primary-400 hover:text-primary-300">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Acknowledge -->
+        <div class="card-gradient glow-effect rounded-lg p-6 border border-primary-500/20 hover:border-primary-400/40 transition-all group cursor-pointer animate-fade-in" style="animation-delay: 0.1s">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-1">Quick Acknowledge</h3>
+                    <span class="inline-block px-2 py-1 bg-amber-500/20 text-amber-400 text-xs rounded-full">Fast</span>
+                </div>
+                <button onclick="useTemplate('acknowledge')" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-primary-600 rounded-lg text-white">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+            <p class="text-gray-300 text-sm mb-4 line-clamp-3">
+                "Hi [Sender], Thanks for your email! I received it and will respond with more details shortly. Regards, [Your Name]"
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span><i class="fas fa-bolt mr-1"></i>Quick</span>
+                <button onclick="editTemplate('acknowledge')" class="text-primary-400 hover:text-primary-300">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Support Request -->
+        <div class="card-gradient glow-effect rounded-lg p-6 border border-primary-500/20 hover:border-primary-400/40 transition-all group cursor-pointer animate-fade-in" style="animation-delay: 0.15s">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-1">Support Response</h3>
+                    <span class="inline-block px-2 py-1 bg-red-500/20 text-red-400 text-xs rounded-full">Help</span>
+                </div>
+                <button onclick="useTemplate('support')" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-primary-600 rounded-lg text-white">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+            <p class="text-gray-300 text-sm mb-4 line-clamp-3">
+                "Hi [Sender], Thank you for contacting support. I'm sorry to hear you're experiencing an issue. I'll investigate this right away and follow up with you shortly with a solution. Best regards, Support Team"
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span><i class="fas fa-headset mr-1"></i>Support</span>
+                <button onclick="editTemplate('support')" class="text-primary-400 hover:text-primary-300">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Meeting Request -->
+        <div class="card-gradient glow-effect rounded-lg p-6 border border-primary-500/20 hover:border-primary-400/40 transition-all group cursor-pointer animate-fade-in" style="animation-delay: 0.2s">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-1">Meeting Request</h3>
+                    <span class="inline-block px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded-full">Schedule</span>
+                </div>
+                <button onclick="useTemplate('meeting')" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-primary-600 rounded-lg text-white">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+            <p class="text-gray-300 text-sm mb-4 line-clamp-3">
+                "Hi [Sender], Thank you for your email. I would be very interested in discussing this further. Would you be available for a brief call this week? I'm flexible with timing. Let me know what works best for you. Best regards, [Your Name]"
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span><i class="fas fa-calendar mr-1"></i>Meeting</span>
+                <button onclick="editTemplate('meeting')" class="text-primary-400 hover:text-primary-300">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Follow Up -->
+        <div class="card-gradient glow-effect rounded-lg p-6 border border-primary-500/20 hover:border-primary-400/40 transition-all group cursor-pointer animate-fade-in" style="animation-delay: 0.25s">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-1">Follow Up</h3>
+                    <span class="inline-block px-2 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full">Reminder</span>
+                </div>
+                <button onclick="useTemplate('followup')" class="opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-primary-600 rounded-lg text-white">
+                    <i class="fas fa-check"></i>
+                </button>
+            </div>
+            <p class="text-gray-300 text-sm mb-4 line-clamp-3">
+                "Hi [Sender], I wanted to follow up on my previous email regarding [topic]. I'm still very interested and would love to hear your thoughts. Looking forward to your response. Best regards, [Your Name]"
+            </p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span><i class="fas fa-sync mr-1"></i>Follow-up</span>
+                <button onclick="editTemplate('followup')" class="text-primary-400 hover:text-primary-300">
+                    <i class="fas fa-edit"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- How to Use Section -->
+    <div class="mt-12 card-gradient glow-effect rounded-lg p-8 border border-primary-500/20">
+        <h2 class="text-2xl font-bold text-white mb-4">
+            <i class="fas fa-question-circle mr-2"></i>How to Use Templates
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-10 h-10 bg-primary-600/30 rounded-lg flex items-center justify-center text-primary-400 font-bold">1</div>
+                    <h3 class="text-white font-semibold">Select Template</h3>
+                </div>
+                <p class="text-gray-400 text-sm">Choose a template from the list above that matches your response style.</p>
+            </div>
+            <div>
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-10 h-10 bg-primary-600/30 rounded-lg flex items-center justify-center text-primary-400 font-bold">2</div>
+                    <h3 class="text-white font-semibold">Click Use</h3>
+                </div>
+                <p class="text-gray-400 text-sm">Click the checkmark button to apply the template to your draft.</p>
+            </div>
+            <div>
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-10 h-10 bg-primary-600/30 rounded-lg flex items-center justify-center text-primary-400 font-bold">3</div>
+                    <h3 class="text-white font-semibold">Customize</h3>
+                </div>
+                <p class="text-gray-400 text-sm">Replace [Sender] and [Your Name] with actual names and edit as needed.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Modal -->
+<div id="templateModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="card-gradient glow-effect rounded-lg w-full max-w-2xl border border-primary-500/20">
+        <div class="sticky top-0 p-6 border-b border-dark-600 flex items-center justify-between bg-dark-900/80 backdrop-blur">
+            <h2 class="text-2xl font-bold text-white">Create Template</h2>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div class="p-6 max-h-96 overflow-y-auto">
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-white mb-2">Template Name</label>
+                    <input type="text" id="templateName" placeholder="e.g. Quick Response"
+                           class="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-white mb-2">Template Category</label>
+                    <select id="templateCategory" class="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500">
+                        <option>Professional</option>
+                        <option>Casual</option>
+                        <option>Quick</option>
+                        <option>Support</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-white mb-2">Template Content</label>
+                    <textarea id="templateContent" rows="8" placeholder="Enter template content..."
+                              class="w-full px-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-primary-500 resize-none"></textarea>
+                    <p class="text-xs text-gray-500 mt-2">Use [Sender] and [Your Name] as placeholders</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="sticky bottom-0 p-6 border-t border-dark-600 bg-dark-900/80 flex justify-end space-x-3">
+            <button onclick="closeModal()" class="px-4 py-2 bg-dark-600 hover:bg-dark-500 text-white rounded-lg transition-colors">
+                Cancel
+            </button>
+            <button onclick="saveTemplate()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">
+                <i class="fas fa-save mr-2"></i>Save Template
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openCreateModal() {
+    document.getElementById('templateModal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('templateModal').classList.add('hidden');
+}
+
+function useTemplate(templateId) {
+    alert(`Template "${templateId}" applied to draft!`);
+    // This would send to drafts page with template pre-filled
+}
+
+function editTemplate(templateId) {
+    document.getElementById('templateName').value = templateId;
+    openCreateModal();
+}
+
+function saveTemplate() {
+    const name = document.getElementById('templateName').value;
+    const content = document.getElementById('templateContent').value;
+
+    if (!name || !content) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    alert(`Template "${name}" saved!`);
+    closeModal();
+    document.getElementById('templateName').value = '';
+    document.getElementById('templateContent').value = '';
+}
+</script>
+{% endblock %}
+                        <option value="work">Work</option>
+                        <option value="support">Support</option>
+                        <option value="marketing">Marketing</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="template-body" class="form-label">Template Body</label>
+                    <textarea class="form-control" id="template-body" rows="6"></textarea>
+                    <small class="text-muted">Use [SENDER_NAME] for dynamic fields</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showNewTemplateModal() {
+    document.getElementById('template-name').value = '';
+    document.getElementById('template-body').value = '';
+    new bootstrap.Modal(document.getElementById('templateModal')).show();
+}
+
+function saveTemplate() {
+    const name = document.getElementById('template-name').value;
+    const body = document.getElementById('template-body').value;
+    const category = document.getElementById('template-category').value;
+
+    if (!name || !body) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    fetch('/api/templates', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, body, category})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'created') {
+            alert('Template created!');
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+        }
+    });
+}
+
+function deleteTemplate(id) {
+    if (!confirm('Delete this template?')) return;
+    // TODO: Implement delete
+    alert('Delete functionality coming soon');
+}
+</script>
+{% endblock %}

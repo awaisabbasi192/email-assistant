@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Email Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h1 class="mb-4">Settings</h1>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Gmail Settings</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Check interval: <code>{{ config.gmail.check_interval_seconds }} seconds</code></p>
+                    <p class="text-muted">Max emails per check: <code>{{ config.gmail.max_results }}</code></p>
+                    <p class="text-muted">Mark as read: <code>{{ config.gmail.mark_as_read | lower }}</code></p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Ollama Settings</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Model: <code>{{ config.ollama.primary_model }}</code></p>
+                    <p class="text-muted">Temperature: <code>{{ config.ollama.temperature }}</code></p>
+                    <p class="text-muted">Max tokens: <code>{{ config.ollama.max_tokens }}</code></p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Classification Settings</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Enabled: <code>{{ config.classification.enabled | lower }}</code></p>
+                    <p class="text-muted">Auto-categorize: <code>{{ config.classification.auto_categorize | lower }}</code></p>
+                    <p class="text-muted">Confidence threshold: <code>{{ config.classification.confidence_threshold }}</code></p>
+                    <p class="text-muted">Categories:</p>
+                    <div class="alert alert-light">
+                        {% for cat in config.classification.categories %}
+                        <span class="badge bg-info">{{ cat }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Web UI Settings</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Server: <code>{{ config.web_ui.host }}:{{ config.web_ui.port }}</code></p>
+                    <p class="text-muted">Session timeout: <code>{{ config.web_ui.session_timeout_minutes }} minutes</code></p>
+                    <p class="text-muted">Debug mode: <code>{{ config.web_ui.debug | lower }}</code></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">System Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-6">Version</dt>
+                        <dd class="col-sm-6"><code>1.0.0</code></dd>
+
+                        <dt class="col-sm-6">Database</dt>
+                        <dd class="col-sm-6"><code>SQLite</code></dd>
+
+                        <dt class="col-sm-6">Python</dt>
+                        <dd class="col-sm-6"><code>3.8+</code></dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Maintenance</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-outline-secondary w-100 mb-2">Clear Cache</button>
+                    <button class="btn btn-outline-secondary w-100 mb-2">Export Data</button>
+                    <button class="btn btn-outline-danger w-100">Reset Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
